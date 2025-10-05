@@ -5,9 +5,9 @@ trigger:
 
 variables:
   VM_IP_PUBLICA: '172.200.26.238'  # Se debe colocar la IP pública de tu máquina virtual
-  IMAGE_NAME: 's3Container'  # Se debe colocar el Nombre de la imagen que será descargada desde ACR
-  ACR_NAME: 's3Container'  # Se debe colocar el Nombre de tu Azure Container Registry (ACR)
-  ACR_USERNAME: 's3Container'  # Se debe colocar el Nombre de usuario del ACR
+  IMAGE_NAME: 's3container'  # Se debe colocar el Nombre de la imagen que será descargada desde ACR
+  ACR_NAME: 's3container'  # Se debe colocar el Nombre de tu Azure Container Registry (ACR)
+  ACR_USERNAME: 's3container'  # Se debe colocar el Nombre de usuario del ACR
   ACR_PASSWORD: 'V9Z3xqakNjoR3rLp1KBqbYNYaBhgOcPoNw/041lV2b+ACRCmXTB/'  # Se debe colocar la Contraseña del ACR
 
 stages:
