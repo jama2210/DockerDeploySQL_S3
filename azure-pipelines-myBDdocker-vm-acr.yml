@@ -5,10 +5,10 @@ trigger:
 
 variables:
   VM_IP_PUBLICA: '172.200.26.238'  # Se debe colocar la IP pública de tu máquina virtual
-  IMAGE_NAME: 's3Container'  # Se debe colocar el Nombre de la imagen que será descargada desde ACR
-  ACR_NAME: 's3Container'  # Se debe colocar el Nombre de tu Azure Container Registry (ACR)
-  ACR_USERNAME: 's3Container'  # Se debe colocar el Nombre de usuario del ACR
-  ACR_PASSWORD: 'V9Z3xqakNjoR3rLp1KBqbYNYaBhgOcPoNw/041lV2b+ACRCmXTB/'  # Se debe colocar la Contraseña del ACR
+  IMAGE_NAME: 's3container'        # Nombre de la imagen en minúsculas
+  ACR_NAME: 's3container'          # Nombre de tu Azure Container Registry en minúsculas
+  ACR_USERNAME: 's3container'      # Nombre de usuario del ACR
+  ACR_PASSWORD: 'V9Z3xqakNjoR3rLp1KBqbYNYaBhgOcPoNw/041lV2b+ACRCmXTB/'  # Contraseña del ACR
 
 stages:
   - stage: Deploy
@@ -16,14 +16,14 @@ stages:
       - deployment: DeployToVM
         displayName: 'Deploy to VM'
         environment:
-          name: 'VMLinuxDocker'  # Nombre del entorno configurado en Azure DevOps
-          resourceType: VirtualMachine  # Especifica que se conecta a una máquina virtual
+          name: 'VMLinuxDocker'
+          resourceType: VirtualMachine
         strategy:
           runOnce:
             deploy:
               steps:
                 - script: |
-                    # Verificar e instalar Azure CLI en la máquina virtual
+                    # Verificar e instalar Azure CLI
                     if ! command -v az &> /dev/null; then
                       echo "Azure CLI no está instalado. Instalando Azure CLI..."
                       sudo apt-get update && \
@@ -37,7 +37,7 @@ stages:
                   failOnStderr: true
 
                 - script: |
-                    # Verificar e instalar Docker en la máquina virtual
+                    # Verificar e instalar Docker
                     if ! command -v docker &> /dev/null; then
                       echo "Docker no está instalado. Instalando Docker..."
                       export DEBIAN_FRONTEND=noninteractive && \
@@ -62,12 +62,15 @@ stages:
                   failOnStderr: true
 
                 - script: |
-                    # Autenticarse en Azure Container Registry utilizando nombre de usuario y contraseña
-                    echo "Autenticándose en Azure Container Registry y ejecutando la imagen Docker..."
+                    # Autenticarse en Azure Container Registry
+                    echo "Autenticándose en Azure Container Registry..."
                     echo ${ACR_PASSWORD} | sudo docker login ${ACR_NAME}.azurecr.io -u ${ACR_USERNAME} --password-stdin > /dev/null 2>&1
 
+                    # Nombre completo de la imagen
+                    IMAGE_FULL_NAME="${ACR_NAME}.azurecr.io/${IMAGE_NAME}:latest"
+
                     # Descargar la imagen desde ACR
-                    sudo docker pull ${ACR_NAME}.azurecr.io/${ACR_NAME}.azurecr.io/${IMAGE_NAME}:latest
+                    sudo docker pull $IMAGE_FULL_NAME
 
                     # Verificar si el contenedor ya está en ejecución
                     if sudo docker ps -a --format '{{.Names}}' | grep -Eq "^nginx_container\$"; then
@@ -75,7 +78,7 @@ stages:
                       sudo docker start nginx_container
                     else
                       echo "El contenedor 'nginx_container' no existe. Creándolo y ejecutándolo..."
-                      sudo docker run -d -p 80:80 --name nginx_container ${ACR_NAME}.azurecr.io/${ACR_NAME}.azurecr.io/${IMAGE_NAME}:latest
+                      sudo docker run -d -p 80:80 --name nginx_container $IMAGE_FULL_NAME
                     fi
 
                     sudo docker ps
@@ -86,3 +89,4 @@ stages:
                     # Mostrar la URL para acceder a Nginx
                     echo "La URL para acceder a Nginx es: http://${VM_IP_PUBLICA}/"
                   displayName: 'Mostrar URL de la máquina virtual'
+
